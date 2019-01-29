@@ -10,7 +10,7 @@ Prerequisites
 
 3. (Optional) Install jq for the last step, that just prints the url in the api endpoint
 
-4. The config.ini has to be uploaded to the correct bucket and *make sure it's readable* by the Lambda. 
+4. The config.ini has to be uploaded to the correct bucket and *make sure it's readable* by the lambda. 
 
 5. The VPC into which the lambda is deployed must have a VPC Endpoint for S3.  The lambda needs this to access S3 from a VPC.  I added a python3 script for creating one `create-vpc-endpoint.py`.  It takes two command line arguments -- a vpc-id and the region name (`us-east-1`, 'us-west-2`, etc)
 
