@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Example
+
+Parameters:
+  ConfigBucket:
+    Type: String
+    Default: vivi-lambda-test-east
+  ConfigFile:
+    Type: String
+    Default: config.ini
+  SubnetId:
+    Description: "Subnet Id to access the database"
+    Type: String
+  SecurityGroupId:
+    Description: "SecurityGroup Id to access the database"
+    Type: String
+
+Resources:
+
+  ApiKeyTestFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement :
+          Effect: "Allow"
+          Principal:
+            Service:
+              - "lambda.amazonaws.com"
+          Action: 'sts:AssumeRole'
+      Path: "/service-role/" 
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+  
+  ApiKeyTestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.lambda_handler
+      Runtime: python3.7
+      CodeUri: lambda
+      MemorySize: 512
+      Timeout: 15
+      Role: !GetAtt ApiKeyTestFunctionRole.Arn
+      Policies:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+          arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+      Environment:
+        Variables:
+          CONFIG_BUCKET_NAME: !Ref ConfigBucket
+          CONFIG_FILE_NAME: !Ref ConfigFile
+      Tags:
+        Name: "Lambda Example for API Key"
+      ReservedConcurrentExecutions: 500
+      VpcConfig:
+        SecurityGroupIds: [ !Ref SecurityGroupId ]
+        SubnetIds: [ !Ref SubnetId ]
+          
+Outputs:
+  UpdateApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/test'
+    Export:
+      Name: URL
+
+
